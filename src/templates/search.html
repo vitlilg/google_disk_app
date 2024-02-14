@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script>
+    const searchForFiles = () => {
+        const searchInputValueFileName = document.getElementById("file_name").value;
+        const searchInputValueFolderName = document.getElementById("search_folder_id").value;
+        window.location.href = `/drive/search/?file_name=${searchInputValueFileName}&folder_name=${searchInputValueFolderName}`;
+    }
+        function redirectToURLByFileID(file_id) {
+        window.location.href = `/drive/folders_and_files/?file_id=${file_id}`;
+    }
+    function redirectToURLMoveToTrash(file_id) {
+        window.location.href = `/drive/move_to_trash/?file_id=${file_id}`;
+    }
+    function redirectToURLRemove(file_id) {
+        window.location.href = `/drive/delete_file/?file_id=${file_id}`;
+    }
+    function redirectToURLMoveToFolder(file_id) {
+        const searchInputValueMoveToFolder = document.getElementById("new_folder_id").value;
+        window.location.href = `/drive/move_file/?file_id=${file_id}&new_folder_id=${searchInputValueMoveToFolder}`;
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-center flex-col items-center">
+    <!-- Search form -->
+    <div class="flex my-3 gap-5">
+        <label for="file_name" class="text-xl">File name</label>
+        <input id="file_name" type="text" placeholder="Enter file name" class="text-xl">
+        <label for="search_folder_id" class="text-xl">Folder ID</label>
+        <input id="search_folder_id" type="text" placeholder="Enter folder ID" class="text-xl">
+        <button onclick="searchForFiles()" class="border-2 rounded-3xl bg-gray-300 p-3">Search</button>
+    </div>
+
+    <!-- Search results -->
+    <div class="flex flex-col">
+    <!-- Table header -->
+    <div class="flex flex-row font-bold border-b border-gray-400">
+        <div class="p-4 w-1/5">Name</div>
+        <div class="p-4 w-1/5">Type</div>
+        <div class="p-4 w-1/5">Size</div>
+        <div class="p-4 w-1/5">Object ID</div>
+        <div class="p-4 w-1/5">Actions</div>
+    </div>
+
+    <!-- Table rows -->
+    {% for record in search_list %}
+        {% set record_id = record['id'] %}
+    <div class="flex flex-row border-b border-gray-400">
+        <div class="p-4 w-1/5">{{ record['name'] }}</div>
+        <div class="p-4 w-1/5">{{ record['mimeType'] }}</div>
+        <div class="p-4 w-1/5">{{ record['size'] }}</div>
+        <div class="p-4 w-1/5">{{ record_id }}</div>
+        <div class="p-4 w-1/5 flex justify-around">
+            <button onclick="redirectToURLByFileID('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Open</button>
+            <button onclick="redirectToURLMoveToTrash('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Move to trash</button>
+            <button onclick="redirectToURLRemove('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Delete</button>
+            <div class="flex items-center">
+                <label for="new_folder_id"></label>
+                <input id="new_folder_id" type="text" placeholder="Enter new folder id" class="text-xl mr-2">
+                <button onclick="redirectToURLMoveToFolder('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Move to folder</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+{% endblock %}

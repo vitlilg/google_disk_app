@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+
+  app:
+    build:
+      context: .
+    env_file:
+      - .docker.env
+    container_name: google_disk_app
+    command: ['/fastapi_app/app.sh']
+    ports:
+      - "8000:8000"

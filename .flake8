@@ -1,0 +1,19 @@
+[flake8]
+exclude = .git,__pycache__,old,build,dist,*/migrations/*,__init__.py,src,venv
+inline-quotes = '
+multiline-quotes = '
+max-line-length = 120
+select = E,F,W,C4,Q0,DJ,N80,ABS,JS
+ignore =
+    W504,
+    # Line break occurred after a binary operator
+    DJ08,
+    # Model does not define str method
+    DJ01,
+    # Avoid using null=True on string-based fields such as CharField and TextField
+    E126,
+    # Continuation line over-indented for hanging indent. Uses 4 character for default, we use are 8,
+    DJ10,
+    # Model should define verbose_name in its Meta inner class
+    DJ11,
+    # Model should define verbose_name_plural in its Meta inner class

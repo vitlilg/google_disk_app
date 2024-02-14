@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script>
+    function redirectToURLRecover(file_id) {
+        window.location.href = `/drive/recover_from_trash/?file_id=${file_id}`;
+    }
+    function redirectToURLRemove(file_id) {
+        window.location.href = `/drive/delete_file/?file_id=${file_id}`;
+    }
+    function redirectToURLEmptyTrash() {
+        window.location.href = `/drive/empty_trash`;
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-center flex-col items-center">
+    <div class="flex my-3 gap-5">
+        <button onclick="redirectToURLEmptyTrash()" class="border-2 rounded-3xl bg-gray-300 p-3">Empty Trash</button>
+    </div>
+    <div class="flex flex-col">
+        <div class="flex flex-row font-bold">
+            <div class="w-1/6 border p-4">Name</div>
+            <div class="w-1/6 border p-4">Type</div>
+            <div class="w-1/6 border p-4">Size</div>
+            <div class="w-1/6 border p-4">ID</div>
+            <div class="w-1/6 border p-4"></div>
+            <div class="w-1/6 border p-4"></div>
+        </div>
+        {% for record in trash_list %}
+        {% set record_id = record['id'] %}
+        <div class="flex flex-row">
+            <div class="w-1/6 border p-4 font-bold">{{ record['name'] }}</div>
+            <div class="w-1/6 border p-4 text-lg">{{ record['mimeType'] }}</div>
+            <div class="w-1/6 border p-4 text-lg">{{ record['size'] }}</div>
+            <div class="w-1/6 border p-4 text-lg">{{ record_id }}</div>
+            <div class="w-1/6 border p-4 text-lg">
+                <button onclick="redirectToURLRecover('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Recover file</button>
+            </div>
+            <div class="w-1/6 border p-4 text-lg">
+                <button onclick="redirectToURLRemove('{{ record_id }}')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Remove file</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
