@@ -82,7 +82,7 @@
         {% set record_id = record['id'] %}
         <div class="flex flex-row border-b border-gray-400">
             <div class="p-4 w-1/5">{{ record['name'] }}</div>
-            <div class="p-4 w-1/5">{{ record['mimeType'] }}</div>
+            <div class="p-4 w-1/5">{{ files_types_mapping[record['mimeType']] }}</div>
             <div class="p-4 w-1/5">{{ record['size'] }}</div>
             <div class="p-4 w-1/5">{{ record_id }}</div>
             <div class="p-4 w-1/5 flex justify-around">

@@ -10,6 +10,7 @@ from starlette.responses import HTMLResponse, RedirectResponse
 
 from src.auth.auth_config import sessions, templates
 from src.drive import drive
+from src.drive.file_types_mapping import FILE_TYPES_MAPPING
 
 router = APIRouter(
     prefix='/drive',
@@ -42,7 +43,7 @@ async def get_folders_and_files(
         return StreamingResponse(file_like_object, media_type='application/octet-stream')
     return templates.TemplateResponse(
         'folders_and_files.html', {
-            'request': request, 'folders_and_files': folders_and_files,
+            'request': request, 'folders_and_files': folders_and_files, 'files_types_mapping': FILE_TYPES_MAPPING,
         },
     )
 
@@ -62,7 +63,7 @@ async def search(
         credentials=credentials, file_name=file_name, folder_name=folder_name, page_size=page_size,
     )
     return templates.TemplateResponse(
-        'search.html', {'request': request, 'search_list': search_list},
+        'search.html', {'request': request, 'search_list': search_list, 'files_types_mapping': FILE_TYPES_MAPPING},
     )
 
 
@@ -167,7 +168,7 @@ async def list_files_in_trash(
         return RedirectResponse(url='/auth/login')
     trash_list = drive.list_files_in_trash(credentials=credentials)
     return templates.TemplateResponse(
-        'trash.html', {'request': request, 'trash_list': trash_list},
+        'trash.html', {'request': request, 'trash_list': trash_list, 'files_types_mapping': FILE_TYPES_MAPPING},
     )
 
 

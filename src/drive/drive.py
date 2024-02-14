@@ -148,7 +148,7 @@ def empty_trash(credentials: Credentials | None):
 def list_files_in_trash(credentials: Credentials | None):
     try:
         service = get_service(credentials)
-        files = service.files().list(q='trashed=true', fields='files(id, name)').execute()
+        files = service.files().list(q='trashed=true', fields='files(id, name, mimeType, parents, size)').execute()
         return files.get('files', [])
     except HttpError as error:
         print(f'An error occurred: {error}')

@@ -1,20 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="https://cdn.tailwindcss.com"></script>
-    {% block head %}{% endblock %}
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <title>Simple Google OAuth2 Disk</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    {% block head %}{% endblock %}
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        nav {
+            background-color: #1258d5;
+            color: #fff;
+        }
+
+        nav ul li {
+            list-style: none;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav a:hover {
+            background-color: #357ae8;
+        }
+
+        #content {
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-    <nav class="flex justify-between text-3xl my-3">
-        <ul class="flex ml-10">
+    <nav class="flex justify-between items-center text-3xl my-3 px-10">
+        <ul class="flex">
             <li>Simple Google OAuth2 Disk</li>
         </ul>
-        <ul class="flex gap-5 mr-10">
+        <ul class="flex gap-5">
             <li><a href="/drive/folders_and_files">All Files</a></li>
             <li><a href="/drive/list_files_in_trash">Trash</a></li>
             <li><a href="/auth/logout">Logout</a></li>
@@ -22,8 +49,16 @@
     </nav>
     <hr>
     <div id="content">
+        <div class="my-4">
+            <button onclick="navigateBack()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Back</button>
+        </div>
         {% block content %}{% endblock %}
     </div>
-{% block footer %}{% endblock %}
+    {% block footer %}{% endblock %}
+    <script>
+    function navigateBack() {
+        window.history.back();
+    }
+</script>
 </body>
 </html>
