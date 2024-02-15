@@ -2,9 +2,10 @@ import io
 import json
 from typing import List, Optional
 
-from fastapi import APIRouter, Cookie, UploadFile
+from fastapi import APIRouter, Cookie, UploadFile, exceptions
 from fastapi.responses import Response, StreamingResponse
 from google.oauth2.credentials import Credentials
+from starlette import status
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, RedirectResponse
 
@@ -37,10 +38,14 @@ async def get_folders_and_files(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    folders_and_files = drive.folders_and_files(credentials=credentials, file_id=file_id)
+    folders_and_files = await drive.folders_and_files(credentials=credentials, file_id=file_id)
     if isinstance(folders_and_files, bytes):
         file_like_object = io.BytesIO(folders_and_files)
         return StreamingResponse(file_like_object, media_type='application/octet-stream')
+    elif isinstance(folders_and_files, bool):
+        return RedirectResponse(url='/auth/login')
+    elif not isinstance(folders_and_files, list) and not folders_and_files:
+        return RedirectResponse(url='/drive/folders_and_files')
     return templates.TemplateResponse(
         'folders_and_files.html', {
             'request': request, 'folders_and_files': folders_and_files, 'files_types_mapping': FILE_TYPES_MAPPING,
@@ -59,7 +64,7 @@ async def search(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    search_list = drive.search_file(
+    search_list = await drive.search_file(
         credentials=credentials, file_name=file_name, folder_name=folder_name, page_size=page_size,
     )
     return templates.TemplateResponse(
@@ -76,7 +81,11 @@ async def download_file(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    result = drive.download_file(credentials=credentials, file_id=file_id, file_name=file_name)
+    result = await drive.download_file(credentials=credentials, file_id=file_id, file_name=file_name)
+    if not result:
+        return exceptions.HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail='No file_id or file_name provided',
+        )
     file_like_object = io.BytesIO(result)
     return StreamingResponse(file_like_object, media_type='application/octet-stream')
 
@@ -91,9 +100,11 @@ async def upload_files(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    result = drive.upload_files(credentials=credentials, files=files, folder_id=folder_id)
+    result = await drive.upload_files(credentials=credentials, files=files, folder_id=folder_id)
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
     response = Response(status_code=303)
-    response.headers['Location'] = f'/drive/folders_and_files/?&file_id={result}'
+    response.headers['Location'] = f'/drive/folders_and_files/?&file_id={result[0]}'
     return response
 
 
@@ -106,8 +117,12 @@ async def create_folder(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    result = drive.create_folder(credentials=credentials, folder_name=folder_name, parent_folder_id=parent_folder_id)
-    return RedirectResponse(url=f'/drive/folders_and_files/?&file_id={result}')
+    result = await drive.create_folder(
+        credentials=credentials, folder_name=folder_name, parent_folder_id=parent_folder_id,
+    )
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
+    return RedirectResponse(url=f'/drive/folders_and_files/?&file_id={result[0]}')
 
 
 @router.get('/move_file')
@@ -119,7 +134,9 @@ async def move_file(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    drive.move_file(credentials=credentials, file_id=file_id, new_folder_id=new_folder_id)
+    result = await drive.move_file(credentials=credentials, file_id=file_id, new_folder_id=new_folder_id)
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
     return RedirectResponse(url=f'/drive/folders_and_files/?&file_id={new_folder_id}')
 
 
@@ -131,7 +148,9 @@ async def move_to_trash(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    drive.move_to_trash(credentials=credentials, file_id=file_id)
+    result = await drive.move_to_trash(credentials=credentials, file_id=file_id)
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
     return RedirectResponse(url='/drive/list_files_in_trash')
 
 
@@ -143,7 +162,9 @@ async def recover_from_trash(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    drive.recover_from_trash(credentials=credentials, file_id=file_id)
+    result = await drive.recover_from_trash(credentials=credentials, file_id=file_id)
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
     return RedirectResponse(url='/drive/folders_and_files')
 
 
@@ -154,7 +175,9 @@ async def empty_trash(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    drive.empty_trash(credentials=credentials)
+    result = await drive.empty_trash(credentials=credentials)
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
     return RedirectResponse(url='/drive/list_files_in_trash')
 
 
@@ -166,7 +189,9 @@ async def list_files_in_trash(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    trash_list = drive.list_files_in_trash(credentials=credentials)
+    trash_list = await drive.list_files_in_trash(credentials=credentials)
+    if isinstance(trash_list, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=trash_list)
     return templates.TemplateResponse(
         'trash.html', {'request': request, 'trash_list': trash_list, 'files_types_mapping': FILE_TYPES_MAPPING},
     )
@@ -180,7 +205,9 @@ async def delete_file(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    drive.delete_file(credentials=credentials, file_id=file_id)
+    result = await drive.delete_file(credentials=credentials, file_id=file_id)
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
     return RedirectResponse(url='/drive/folders_and_files')
 
 
@@ -192,4 +219,8 @@ async def export_file(
     credentials = get_credentials(session_id)
     if not credentials:
         return RedirectResponse(url='/auth/login')
-    return drive.export_file(credentials=credentials, file_id=file_id)
+    result = await drive.export_file(credentials=credentials, file_id=file_id)
+    if isinstance(result, str):
+        return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
+    file_like_object = io.BytesIO(result)
+    return StreamingResponse(file_like_object, media_type='application/octet-stream')

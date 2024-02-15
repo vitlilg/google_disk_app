@@ -2,12 +2,11 @@ import io
 from typing import List
 
 from fastapi import UploadFile
-from google.auth import exceptions
+from google.auth import exceptions as google_exeptions
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
-from starlette.responses import RedirectResponse
 
 
 def get_service(credentials):
@@ -25,7 +24,7 @@ def download_file_by_id(file_id: str, service):
     return file.getvalue()
 
 
-def folders_and_files(credentials: Credentials | None, file_id: str | None = None):
+async def folders_and_files(credentials: Credentials | None, file_id: str | None = None):
     service = get_service(credentials)
     if not file_id:
         try:
@@ -35,8 +34,8 @@ def folders_and_files(credentials: Credentials | None, file_id: str | None = Non
                 fields='nextPageToken, files(id, name, mimeType, parents, size)',
             ).execute()
             return root_folder_files.get('files', [])
-        except exceptions.RefreshError:
-            return RedirectResponse(url='/auth/login')
+        except google_exeptions.RefreshError:
+            return False
 
     file = service.files().get(fileId=file_id).execute()
     if not file:
@@ -51,7 +50,7 @@ def folders_and_files(credentials: Credentials | None, file_id: str | None = Non
         return download_file_by_id(file_id, service)
 
 
-def search_file(credentials: Credentials | None, file_name=None, folder_name=None, page_size: int = 10):
+async def search_file(credentials: Credentials | None, file_name=None, folder_name=None, page_size: int = 10):
     service = get_service(credentials)
     files = []
     if file_name:
@@ -77,7 +76,7 @@ def search_file(credentials: Credentials | None, file_name=None, folder_name=Non
     return files
 
 
-def create_folder(credentials: Credentials | None, folder_name: str, parent_folder_id: str = None):
+async def create_folder(credentials: Credentials | None, folder_name: str, parent_folder_id: str = None):
     try:
         service = get_service(credentials)
         if not parent_folder_id or parent_folder_id == 'null':
@@ -89,13 +88,12 @@ def create_folder(credentials: Credentials | None, folder_name: str, parent_fold
             'parents': [parent_folder_id],
         }
         file = service.files().create(body=file_metadata, fields='id, parents').execute()
-        return file.get('parents', [])[0]
+        return file.get('parents', [])
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        return None
+        return f'An error occurred: {error}'
 
 
-def move_file(credentials: Credentials | None, file_id: str, new_folder_id: str):
+async def move_file(credentials: Credentials | None, file_id: str, new_folder_id: str):
     try:
         service = get_service(credentials)
         file = service.files().get(fileId=file_id, fields='parents').execute()
@@ -106,66 +104,59 @@ def move_file(credentials: Credentials | None, file_id: str, new_folder_id: str)
             removeParents=previous_parents,
             fields='id, parents',
         ).execute()
-        print(f'File ID {file_id} moved to folder ID {new_folder_id}')
-        return file.get('id')
+        return bool(file)
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        return None
+        return f'An error occurred: {error}'
 
 
-def move_to_trash(credentials: Credentials | None, file_id: str):
+async def move_to_trash(credentials: Credentials | None, file_id: str):
     try:
         service = get_service(credentials)
         body_value = {'trashed': True}
         file = service.files().update(fileId=file_id, body=body_value).execute()
-        return file.get('id')
+        return bool(file)
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        return None
+        return f'An error occurred: {error}'
 
 
-def recover_from_trash(credentials: Credentials | None, file_id: str):
+async def recover_from_trash(credentials: Credentials | None, file_id: str):
     try:
         service = get_service(credentials)
         body_value = {'trashed': False}
         file = service.files().update(fileId=file_id, body=body_value).execute()
-        return file.get('id')
+        return bool(file)
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        return None
+        return f'An error occurred: {error}'
 
 
-def empty_trash(credentials: Credentials | None):
+async def empty_trash(credentials: Credentials | None):
     try:
         service = get_service(credentials)
-        service.files().emptyTrash().execute()
-        return True
+        result = service.files().emptyTrash().execute()
+        return bool(result)
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        return None
+        return f'An error occurred: {error}'
 
 
-def list_files_in_trash(credentials: Credentials | None):
+async def list_files_in_trash(credentials: Credentials | None):
     try:
         service = get_service(credentials)
         files = service.files().list(q='trashed=true', fields='files(id, name, mimeType, parents, size)').execute()
         return files.get('files', [])
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        return None
+        return f'An error occurred: {error}'
 
 
-def delete_file(credentials: Credentials, file_id: str):
+async def delete_file(credentials: Credentials, file_id: str):
     try:
         service = get_service(credentials)
-        service.files().delete(fileId=file_id).execute()
-        return True
+        result = service.files().delete(fileId=file_id).execute()
+        return bool(result)
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        return None
+        return f'An error occurred: {error}'
 
 
-def upload_files(credentials: Credentials | None, files: List[UploadFile], folder_id: str | None = None):
+async def upload_files(credentials: Credentials | None, files: List[UploadFile], folder_id: str | None = None):
     try:
         service = get_service(credentials)
         for file in files:
@@ -179,31 +170,32 @@ def upload_files(credentials: Credentials | None, files: List[UploadFile], folde
                 .create(body=file_metadata, media_body=media, fields='id, parents')
                 .execute()
             )
-            return file.get('parents', [])[0]
+            return file.get('parents', [])
     except HttpError as error:
-        print(f'An error occurred: {error}')
+        return f'An error occurred: {error}'
 
 
-def update_file(credentials: Credentials | None, file_to_replace: UploadFile, file_id: str):
+async def update_file(credentials: Credentials | None, file_to_replace: UploadFile, file_id: str):
     try:
         service = get_service(credentials)
         fh = io.BytesIO(file_to_replace.file.read())
         media = MediaIoBaseUpload(fh, mimetype=file_to_replace.content_type, resumable=True)
-        (
+        result = (
             service.files()
             .update(fileId=file_id, body={}, media_body=media, fields='id')
             .execute()
         )
+        return bool(result)
     except HttpError as err:
-        print(f'An error occurred: {err}')
+        return f'An error occurred: {err}'
 
 
-def download_file(credentials: Credentials | None, file_id=None, file_name=None):
+async def download_file(credentials: Credentials | None, file_id=None, file_name=None):
     if file_id:
         service = get_service(credentials)
         return download_file_by_id(file_id, service)
     elif file_name:
-        files = search_file(credentials=credentials, file_name=file_name)
+        files = await search_file(credentials=credentials, file_name=file_name)
         if len(files) == 0:
             print(f"Couldn't find file: {file_name}")
         elif len(files) > 1:
@@ -212,10 +204,10 @@ def download_file(credentials: Credentials | None, file_id=None, file_name=None)
         file_id = files[0]['id']
         return download_file(file_id)
     else:
-        print('no file_id or file_name provided')
+        return False
 
 
-def export_file(credentials: Credentials | None, file_id):
+async def export_file(credentials: Credentials | None, file_id):
     try:
         service = get_service(credentials)
         request = service.files().export_media(
@@ -229,7 +221,6 @@ def export_file(credentials: Credentials | None, file_id):
             print(f'Download {int(status.progress() * 100)}.')
 
     except HttpError as error:
-        print(f'An error occurred: {error}')
-        file = None
+        return f'An error occurred: {error}'
 
     return file.getvalue()
