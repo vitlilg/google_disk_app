@@ -1,13 +1,26 @@
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 
 from src.auth.router import router as auth_router
 from src.drive.router import router as drive_router
 
+logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 app = FastAPI(
     title='Simple Google Drive App',
 )
 
+
+@app.middleware('http')
+async def log_requests(request: Request, call_next):
+    path = request.url.path
+    method = request.method
+    client_host = request.client.host
+    logging.info(f'User {client_host} accessed {method} {path}')
+    response = await call_next(request)
+    return response
 
 origins = [
     'http://localhost:8000',
@@ -24,6 +37,10 @@ app.add_middleware(
         'Authorization',
     ],
 )
+
+
+def get_logger(request: Request):
+    return logging.getLogger('user_activity')
 
 
 app.include_router(auth_router)
