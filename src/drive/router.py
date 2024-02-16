@@ -122,7 +122,9 @@ async def create_folder(
     )
     if isinstance(result, str):
         return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
-    return RedirectResponse(url=f'/drive/folders_and_files/?&file_id={result[0]}')
+    response = Response(status_code=303)
+    response.headers['Location'] = f'/drive/folders_and_files/?&file_id={result[0]}'
+    return response
 
 
 @router.get('/move_file')
@@ -137,7 +139,9 @@ async def move_file(
     result = await drive.move_file(credentials=credentials, file_id=file_id, new_folder_id=new_folder_id)
     if isinstance(result, str):
         return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
-    return RedirectResponse(url=f'/drive/folders_and_files/?&file_id={new_folder_id}')
+    response = Response(status_code=303)
+    response.headers['Location'] = f'/drive/folders_and_files/?&file_id={new_folder_id}'
+    return response
 
 
 @router.get('/move_to_trash')
@@ -151,7 +155,9 @@ async def move_to_trash(
     result = await drive.move_to_trash(credentials=credentials, file_id=file_id)
     if isinstance(result, str):
         return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
-    return RedirectResponse(url='/drive/list_files_in_trash')
+    response = Response(status_code=303)
+    response.headers['Location'] = '/drive/list_files_in_trash'
+    return response
 
 
 @router.get('/recover_from_trash')
@@ -165,7 +171,9 @@ async def recover_from_trash(
     result = await drive.recover_from_trash(credentials=credentials, file_id=file_id)
     if isinstance(result, str):
         return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
-    return RedirectResponse(url='/drive/folders_and_files')
+    response = Response(status_code=303)
+    response.headers['Location'] = '/drive/folders_and_files'
+    return response
 
 
 @router.get('/empty_trash')
@@ -178,7 +186,9 @@ async def empty_trash(
     result = await drive.empty_trash(credentials=credentials)
     if isinstance(result, str):
         return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
-    return RedirectResponse(url='/drive/list_files_in_trash')
+    response = Response(status_code=303)
+    response.headers['Location'] = '/drive/list_files_in_trash'
+    return response
 
 
 @router.get('/list_files_in_trash')
@@ -208,7 +218,9 @@ async def delete_file(
     result = await drive.delete_file(credentials=credentials, file_id=file_id)
     if isinstance(result, str):
         return exceptions.HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result)
-    return RedirectResponse(url='/drive/folders_and_files')
+    response = Response(status_code=303)
+    response.headers['Location'] = '/drive/folders_and_files'
+    return response
 
 
 @router.get('/export_file_to_pdf')

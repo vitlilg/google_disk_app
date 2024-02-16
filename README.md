@@ -13,6 +13,7 @@
 ## Стек технологій
 ![Python](https://img.shields.io/badge/Python-3.10.5-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109.2-28a745)
+![Redis](https://img.shields.io/badge/Redis-4.6.0-dc3545)
 
 Повний перелік залежностей - [requirements.txt](./requirements.txt)
 
@@ -28,7 +29,10 @@ SECRET="<str>"
 GOOGLE_OAUTH_CLIENT_ID=<str>
 GOOGLE_OAUTH_CLIENT_SECRET=str
 
-REDIRECT_URL="str"
+REDIRECT_URL=<str>
+
+REDIS_HOST=<str>
+REDIS_PORT=<int>
 ```
 
 Повний перелік змінних оточення - [.env.example](./.env.example)

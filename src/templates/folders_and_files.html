@@ -17,12 +17,12 @@
         window.location.href = `/drive/delete_file/?file_id=${file_id}`;
     }
     function redirectToURLMoveToFolder(file_id) {
-        const searchInputValueMoveToFolder = document.getElementById("new_folder_id").value;
+        const searchInputValueMoveToFolder = document.getElementById(`new_folder_${file_id}`).value;
         window.location.href = `/drive/move_file/?file_id=${file_id}&new_folder_id=${searchInputValueMoveToFolder}`;
     }
     function redirectToURLCreateFolder() {
         const searchInputValueCreateFolder = document.getElementById("folder_name").value;
-        if (parentFolderId !== null) {
+        if ((parentFolderId !== null) || (parentFolderId !== '')) {
             window.location.href = `/drive/create_folder/?folder_name=${searchInputValueCreateFolder}&parent_folder_id=${parentFolderId}`;
         } else {
             window.location.href = `/drive/create_folder/?folder_name=${searchInputValueCreateFolder}`;
@@ -42,8 +42,8 @@
         <button onclick="searchForFiles()" class="border-2 rounded-3xl bg-gray-300 p-3">Search</button>
     </div>
     <div class="flex my-3 gap-5">
-        <label for="folder_name">File name</label>
-        <input id="folder_name" type="text" placeholder="Enter file name" class="text-xl">
+        <label for="folder_name">New folder name</label>
+        <input id="folder_name" type="text" placeholder="Enter new folder name" class="text-xl">
         <button onclick="redirectToURLCreateFolder()" class="border-2 rounded-3xl bg-gray-300 p-3">Create folder</button>
     </div>
 
@@ -51,7 +51,7 @@
         <form id="uploadForm" method="post" enctype="multipart/form-data">
             <!-- Input for file selection -->
             <div class="mb-4">
-                <label for="files" class="block text-gray-700 font-bold mb-2">Select File:</label>
+                <label for="files" class="block text-gray-700 font-bold mb-2">Select file to create:</label>
                 <input type="file" name="files" id="files" required>
             </div>
 
@@ -90,8 +90,8 @@
                 <button onclick="redirectToURLMoveToTrash('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Move to trash</button>
                 <button onclick="redirectToURLRemove('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Delete</button>
                 <div class="flex items-center">
-                    <label for="new_folder_id"></label>
-                    <input id="new_folder_id" type="text" placeholder="Enter new folder id" class="text-xl mr-2">
+                    <label for="new_folder_{{ record_id }}"></label>
+                    <input id="new_folder_{{ record_id }}" type="text" placeholder="Enter new folder id" class="text-xl mr-2">
                     <button onclick="redirectToURLMoveToFolder('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Move to folder</button>
                 </div>
             </div>

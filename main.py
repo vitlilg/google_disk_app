@@ -1,15 +1,30 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from redis import asyncio as aioredis
 from starlette.middleware.cors import CORSMiddleware
 
 from src.auth.router import router as auth_router
+from src.config import REDIS_HOST, REDIS_PORT
 from src.drive.router import router as drive_router
 
 logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
+@asynccontextmanager
+async def lifespan(_):
+    redis = aioredis.from_url(f'redis://{REDIS_HOST}:{REDIS_PORT}', encoding='utf-8', decode_responses=True)
+    FastAPICache.init(RedisBackend(redis), prefix='fastapi-cache')
+    yield
+    FastAPICache.reset()
+
+
 app = FastAPI(
     title='Simple Google Drive App',
+    lifespan=lifespan,
 )
 
 

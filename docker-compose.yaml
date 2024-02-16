@@ -2,6 +2,13 @@ version: "3.7"
 
 services:
 
+  redis:
+    image: redis:7
+    container_name: redis_google_disk_app
+    command: --port 6379
+    ports:
+      - "6379:6379"
+
   app:
     build:
       context: .
@@ -11,3 +18,5 @@ services:
     command: ['/fastapi_app/app.sh']
     ports:
       - "8000:8000"
+    depends_on:
+      - redis
