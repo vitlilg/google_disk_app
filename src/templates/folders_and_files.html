@@ -86,12 +86,12 @@
             <div class="p-4 w-1/5">{{ record['size'] }}</div>
             <div class="p-4 w-1/5">{{ record_id }}</div>
             <div class="p-4 w-1/5 flex justify-around">
-                <button onclick="redirectToURLByFileID('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Open</button>
-                <button onclick="redirectToURLMoveToTrash('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Move to trash</button>
-                <button onclick="redirectToURLRemove('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Delete</button>
+                <button onclick="redirectToURLByFileID('{{ record_id }}')" class="mr-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Open</button>
+                <button onclick="redirectToURLMoveToTrash('{{ record_id }}')" class="mr-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Move to trash</button>
+                <button onclick="redirectToURLRemove('{{ record_id }}')" class="mr-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Delete</button>
                 <div class="flex items-center">
                     <label for="new_folder_{{ record_id }}"></label>
-                    <input id="new_folder_{{ record_id }}" type="text" placeholder="Enter new folder id" class="text-xl mr-2">
+                    <input id="new_folder_{{ record_id }}" type="text" placeholder="Enter new folder id" class="mr-4 text-xl mr-2">
                     <button onclick="redirectToURLMoveToFolder('{{ record_id }}')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Move to folder</button>
                 </div>
             </div>

@@ -48,12 +48,8 @@
         </ul>
     </nav>
     <hr>
-    <div id="content">
-        <div class="my-4">
-            <button onclick="navigateBack()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Back</button>
-        </div>
-        {% block content %}{% endblock %}
-    </div>
+    <button onclick="navigateBack()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Back</button>
+    {% block content %}{% endblock %}
     {% block footer %}{% endblock %}
     <script>
     function navigateBack() {
